@@ -32,14 +32,23 @@ import convert from '@digitallinguistics/toolbox2json';
 convert();
 ```
 
+## Contributing
+
+* Find a bug? Want to request a feature? [Open an issue.][new-issue]
+* Pull requests are welcome!
+* Tests are run using [Mocha][Mocha] and [expect.js][expect]. You can run them locally with `npm test`.
+
 <!-- LINKS -->
-[GitHub]:   https://github.com/digitallinguistics/toolbox2json#readme
-[issues]:   https://github.com/digitallinguistics/toolbox2json/issues
-[JSON]:     https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Objects/JSON
-[license]:  https://github.com/digitallinguistics/toolbox2json/blob/main/LICENSE
-[npm]:      https://www.npmjs.com/
-[releases]: https://github.com/digitallinguistics/toolbox2json/releases
-[SFM]:      https://www.angelfire.com/planet/linguisticsisfun/ToolboxReferenceManual.pdf
-[SIL]:      https://www.sil.org/
-[Toolbox]:  https://software.sil.org/toolbox/
-[yarn]:     https://yarnpkg.com/
+[expect]:    https://github.com/Automattic/expect.js
+[GitHub]:    https://github.com/digitallinguistics/toolbox2json#readme
+[issues]:    https://github.com/digitallinguistics/toolbox2json/issues
+[JSON]:      https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Objects/JSON
+[license]:   https://github.com/digitallinguistics/toolbox2json/blob/main/LICENSE
+[Mocha]:     https://mochajs.org/
+[new-issue]: https://github.com/digitallinguistics/toolbox2json/issues/new
+[npm]:       https://www.npmjs.com/
+[releases]:  https://github.com/digitallinguistics/toolbox2json/releases
+[SFM]:       https://www.angelfire.com/planet/linguisticsisfun/ToolboxReferenceManual.pdf
+[SIL]:       https://www.sil.org/
+[Toolbox]:   https://software.sil.org/toolbox/
+[yarn]:      https://yarnpkg.com/

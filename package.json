@@ -32,5 +32,12 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "expect.js": "^0.3.1",
+    "mocha": "^8.3.0"
+  },
+  "scripts": {
+    "test": "mocha toolbox2json.test.js"
   }
 }
