@@ -7,14 +7,16 @@ If you use this library for research purposes, please consider citing it using t
 > Hieber, Daniel W. 2021. @digitallinguistics/toolbox2json. DOI:10.5281/zenodo.4560920.
 
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/digitallinguistics/toolbox2json)][releases]
+[![tests status](https://github.com/digitallinguistics/toolbox2json/actions/workflows/test.yml/badge.svg?branch=main)][status]
 [![GitHub issues](https://img.shields.io/github/issues/digitallinguistics/toolbox2json)][issues]
 [![DOI](https://zenodo.org/badge/342063996.svg)](https://zenodo.org/badge/latestdoi/342063996)
 [![license](https://img.shields.io/github/license/digitallinguistics/toolbox2json)][license]
 [![GitHub repo stars](https://img.shields.io/github/stars/digitallinguistics/toolbox2json?style=social)][GitHub]
 
-[![tests status](https://github.com/digitallinguistics/toolbox2json/actions/workflows/test.yml/badge.svg?branch=main&event=push)][status]
-
+## Contents
 <!-- TOC -->
+- [Basic Usage](#basic-usage)
+- [Contributing](#contributing)
 <!-- /TOC -->
 
 ## Basic Usage
@@ -52,5 +54,6 @@ convert();
 [releases]:  https://github.com/digitallinguistics/toolbox2json/releases
 [SFM]:       https://www.angelfire.com/planet/linguisticsisfun/ToolboxReferenceManual.pdf
 [SIL]:       https://www.sil.org/
+[status]:    https://github.com/digitallinguistics/toolbox2json/actions/workflows/test.yml
 [Toolbox]:   https://software.sil.org/toolbox/
 [yarn]:      https://yarnpkg.com/
