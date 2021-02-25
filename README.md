@@ -12,6 +12,8 @@ If you use this library for research purposes, please consider citing it using t
 [![license](https://img.shields.io/github/license/digitallinguistics/toolbox2json)][license]
 [![GitHub repo stars](https://img.shields.io/github/stars/digitallinguistics/toolbox2json?style=social)][GitHub]
 
+[![tests status](https://github.com/digitallinguistics/toolbox2json/actions/workflows/test.yml/badge.svg?branch=main&event=push)][status]
+
 <!-- TOC -->
 <!-- /TOC -->
 
