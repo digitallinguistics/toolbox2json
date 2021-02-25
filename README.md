@@ -10,12 +10,31 @@ A Node / JavaScript library for converting [SIL][SIL] [Toolbox][Toolbox] files i
 <!-- TOC -->
 <!-- /TOC -->
 
+## Basic Usage
+
+Install using [npm][npm] or [yarn][yarn]:
+
+```cmd
+npm install @digitallinguistics/toolbox2json
+yarn add @digitallinguistics/toolbox2json
+```
+
+The library exports a single function `toolbox2json`:
+
+```js
+import convert from '@digitallinguistics/toolbox2json';
+
+convert();
+```
+
 <!-- LINKS -->
 [GitHub]:   https://github.com/digitallinguistics/toolbox2json#readme
 [issues]:   https://github.com/digitallinguistics/toolbox2json/issues
 [JSON]:     https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Objects/JSON
 [license]:  https://github.com/digitallinguistics/toolbox2json/blob/main/LICENSE
+[npm]:      https://www.npmjs.com/
 [releases]: https://github.com/digitallinguistics/toolbox2json/releases
 [SFM]:      https://www.angelfire.com/planet/linguisticsisfun/ToolboxReferenceManual.pdf
 [SIL]:      https://www.sil.org/
 [Toolbox]:  https://software.sil.org/toolbox/
+[yarn]:     https://yarnpkg.com/

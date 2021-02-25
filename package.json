@@ -1,0 +1,36 @@
+{
+  "name": "@digitallinguistics/toolbox2json",
+  "version": "0.1.0",
+  "description": "A Node / JavaScript library to convert SIL Toolbox files in SFM format to JSON",
+  "keywords": [
+    "dictionaries",
+    "dictionary",
+    "JSON",
+    "language",
+    "languages",
+    "lexicography",
+    "linguistics",
+    "SFM",
+    "SIL",
+    "Toolbox"
+  ],
+  "homepage": "https://github.com/digitallinguistics/toolbox2json#readme",
+  "bugs": "https://github.com/digitallinguistics/toolbox2json/issues",
+  "license": "MIT",
+  "author": {
+    "name": "Daniel W. Hieber",
+    "url": "https://danielhieber.com"
+  },
+  "main": "toolbox2json.js",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/digitallinguistics/toolbox2json.git"
+  },
+  "engines": {
+    "node": ">=14.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
