@@ -1,7 +1,7 @@
 {
   "name": "@digitallinguistics/toolbox2json",
   "version": "0.1.1",
-  "description": "A Node / JavaScript library to convert SIL Toolbox files in SFM format to JSON",
+  "description": "A Node (JavaScript) library to convert SIL Toolbox files in SFM format to JSON",
   "keywords": [
     "dictionaries",
     "dictionary",
@@ -37,6 +37,7 @@
     "access": "public"
   },
   "dependencies": {
+    "commander": "^7.1.0",
     "eslint": "^7.20.0",
     "expect.js": "^0.3.1",
     "mocha": "^8.3.0",

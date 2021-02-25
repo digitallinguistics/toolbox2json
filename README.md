@@ -1,6 +1,6 @@
 # toolbox2json [<span style="color: red;">WORK IN PROGRESS</span>]
 
-A Node / JavaScript library for converting [SIL][SIL] [Toolbox][Toolbox] files in [SFM format][SFM] to [JSON][JSON]. Useful for any linguist working with Toolbox data.
+A Node / JavaScript library for converting [SIL][SIL] [Toolbox][Toolbox] files in [SFM format][SFM] to [JSON][JSON]. Useful for any linguist working with Toolbox data. Runs as a module or on the command line.
 
 If you use this library for research purposes, please consider citing it using the following model:
 
@@ -28,13 +28,15 @@ npm install @digitallinguistics/toolbox2json
 yarn add @digitallinguistics/toolbox2json
 ```
 
-The library exports a single function, `toolbox2json`, which does the conversion:
+The library exports a single function, `toolbox2json`, which accepts the path to the Toolbox file as an argument and runs the conversion:
 
 ```js
 import convert from '@digitallinguistics/toolbox2json';
 
-convert();
+convert(`./my-data.db`);
 ```
+
+You can also run the library from the command line using `toolbox2json <filePath>`, where `<filePath>` is the path to the Toolbox file.
 
 ## Contributing
 
