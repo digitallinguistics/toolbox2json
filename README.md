@@ -41,6 +41,7 @@ convert();
 * Find a bug? Want to request a feature? [Open an issue.][new-issue]
 * Pull requests are welcome!
 * Tests are run using [Mocha][Mocha] and [expect.js][expect]. You can run them locally with `npm test`.
+* Sample data for testing are located in `/data`.
 
 <!-- LINKS -->
 [expect]:    https://github.com/Automattic/expect.js
