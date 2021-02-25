@@ -8,7 +8,7 @@ on:
 
 jobs:
 
-  setup:
+  run-tests:
     runs-on: ubuntu-latest
     steps:
 
@@ -28,11 +28,6 @@ jobs:
 
       - name: install dependencies
         run:  npm ci
-
-  run-tests:
-    needs:   setup
-    runs-on: ubuntu-latest
-    steps:
 
       - name: run tests
         run:  npm test
