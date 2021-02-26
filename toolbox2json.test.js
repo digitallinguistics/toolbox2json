@@ -28,6 +28,20 @@ describe(`toolbox2json`, () => {
     expect(transformStream).to.be.a(Transform);
   });
 
+  it(`returns 1 object per Toolbox entry`, done => {
+
+    const numEntries = 5;
+    const stream     = convert(crkPath, { silent: true });
+    const entries    = [];
+
+    stream.on(`data`, entry => entries.push(entry));
+    stream.on(`end`, () => {
+      expect(entries).to.have.length(numEntries);
+      done();
+    });
+
+  });
+
   specify(`<filePath>`, () => {
     expect(() => convert()).to.throwError(`filePath`);
   });
