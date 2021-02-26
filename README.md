@@ -29,19 +29,37 @@ npm install @digitallinguistics/toolbox2json
 yarn add @digitallinguistics/toolbox2json
 ```
 
-The library exports a single function, `toolbox2json`, which accepts the path to the Toolbox file as an argument.
+The library can be run as either an ES module or from the command line.
+
+The ES module exports a single function, `toolbox2json`, which accepts two arguments:
+
+* the path to the Toolbox file (_required_)
+* an options object (_optional_)
+
+The resulting JSON is saved to the path specified in the `out` option:
 
 ```js
 import convert from '@digitallinguistics/toolbox2json';
 
-convert(`./my-data.db`);
+convert(`./my-data.db`, { out: `my-data.json` });
 ```
 
-You can also run the library from the command line using `toolbox2json <filePath>`, where `<filePath>` is the path to the Toolbox file.
+To run the library from the command line, use `toolbox2json <filePath>`. This will print the results to the console by default. To save the JSON output to a file, use the `--out` option or `-o` flag: `toolbox2json <filePath> --out <jsonPath>`. To see the full list of command line options, run `toolbox2json --help`.
+
+## Options
+
+Module   | Command Line | Flag | Type    | Default | Description
+---------|--------------|------|---------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+         | `--help`     | `-h` |         |         | Display help.
+`out`    | `--out`      | `-o` | String  |         | The path where the JSON file should be saved. If this option is provided, the module will not return a readable stream, and no JSON data will be displayed on the command line.
+`silent` | `--silent`   | `-s` | Boolean | `false` | Silences console output (except for the converted JSON).
+         | `--version`  | `-v` |         |         | Output the version number.
 
 ## Streaming Data
 
-The `toolbox2json` function returns a readable stream of JavaScript objects (where each object represents one entry in the Toolbox file), which you can subscribe to using the `data` event. In this example, each JavaScript object is converted to JSON, and streamed to the `my-data.json` file.
+By default, calling the `toolbox2json` function returns a readable stream of JavaScript objects (where each object represents one entry in the Toolbox file), which you can subscribe to using the `data` event. (If the `out` option is provided, nothing is returned from the function.)
+
+In this example, each JavaScript object is converted to JSON, and streamed to the `my-data.json` file.
 
 ```js
 import convert       from '@digitallinguistics/toolbox2json';

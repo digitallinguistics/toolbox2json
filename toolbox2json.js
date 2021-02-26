@@ -3,13 +3,22 @@ import fs            from 'fs';
 import readLine      from 'readline';
 import { Transform } from 'stream';
 
-export default function toolbox2json(filePath) {
+export default function toolbox2json(filePath, { out, silent = false } = {}) {
 
   if (!filePath) {
     throw new TypeError(`Please provide a <filePath> argument containing the path to the Toolbox file.`);
   }
 
-  const spinner = createSpinner(`Converting Toolbox file.`).start();
+  const spinner = createSpinner(`Converting Toolbox file.`);
+
+  const displayError = e => {
+    spinner.isSilent = false;
+    spinner.fail(e.message);
+  };
+
+  if (silent) spinner.isSilent = true;
+
+  spinner.start();
 
   const readStream = fs.createReadStream(filePath);
 
@@ -37,11 +46,15 @@ export default function toolbox2json(filePath) {
   });
 
   lineStream.on(`close`, () => spinner.succeed(`Toolbox file converted.`));
-  lineStream.on(`error`, e => spinner.fail(e.message));
+  lineStream.on(`error`, displayError);
   lineStream.on(`line`, line => transformStream.write(line));
-  readStream.on(`error`, e => spinner.fail(e.message));
-  transformStream.on(`error`, e => spinner.fail(e.message));
+  readStream.on(`error`, displayError);
+  transformStream.on(`error`, displayError);
 
-  return transformStream;
+  if (!out) return transformStream;
+
+  const writeStream = fs.createWriteStream(out);
+
+  transformStream.pipe(writeStream);
 
 }
