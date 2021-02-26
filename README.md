@@ -16,6 +16,7 @@ If you use this library for research purposes, please consider citing it using t
 ## Contents
 <!-- TOC -->
 - [Basic Usage](#basic-usage)
+- [Streaming Data](#streaming-data)
 - [Contributing](#contributing)
 <!-- /TOC -->
 
@@ -28,7 +29,7 @@ npm install @digitallinguistics/toolbox2json
 yarn add @digitallinguistics/toolbox2json
 ```
 
-The library exports a single function, `toolbox2json`, which accepts the path to the Toolbox file as an argument and runs the conversion:
+The library exports a single function, `toolbox2json`, which accepts the path to the Toolbox file as an argument.
 
 ```js
 import convert from '@digitallinguistics/toolbox2json';
@@ -37,6 +38,30 @@ convert(`./my-data.db`);
 ```
 
 You can also run the library from the command line using `toolbox2json <filePath>`, where `<filePath>` is the path to the Toolbox file.
+
+## Streaming Data
+
+The `toolbox2json` function returns a readable stream of JavaScript objects (where each object represents one entry in the Toolbox file), which you can subscribe to using the `data` event. In this example, each JavaScript object is converted to JSON, and streamed to the `my-data.json` file.
+
+```js
+import convert       from '@digitallinguistics/toolbox2json';
+import fs            from 'fs';
+import { Transform } from 'stream';
+
+const readableStream = convert(`./my-data.db`);
+const writableStream = fs.createWriteStream(`my-data.json`);
+
+const transformStream = new Transform({
+  transform(chunk, encoding, callback) {
+    this.push(JSON.stringify(chunk.toString()));
+    callback();
+  }
+})
+
+readableStream
+.pipe(transformStream)
+.pipe(writableStream);
+```
 
 ## Contributing
 
