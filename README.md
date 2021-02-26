@@ -16,6 +16,7 @@ If you use this library for research purposes, please consider citing it using t
 ## Contents
 <!-- TOC -->
 - [Basic Usage](#basic-usage)
+- [Options](#options)
 - [Streaming Data](#streaming-data)
 - [Contributing](#contributing)
 <!-- /TOC -->
@@ -51,7 +52,8 @@ To run the library from the command line, use `toolbox2json <filePath>`. This wi
 Module   | Command Line | Flag | Type    | Default | Description
 ---------|--------------|------|---------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
          | `--help`     | `-h` |         |         | Display help.
-`out`    | `--out`      | `-o` | String  |         | The path where the JSON file should be saved. If this option is provided, the module will not return a readable stream, and no JSON data will be displayed on the command line.
+`ndjson` | `--ndjson`   | `-n` | Boolean | `false` | Outputs newline-delimited JSON.
+`out`    | `--out`      | `-o` | String  |         | The path where the JSON file should be saved. If this option is provided, the module will return a Promise that resolves when the operation is complete, and no JSON data will be displayed on the command line. Otherwise, the module returns a readable stream of JavaScript objects (one for each entry in the Toolbox file).
 `silent` | `--silent`   | `-s` | Boolean | `false` | Silences console output (except for the converted JSON).
          | `--version`  | `-v` |         |         | Output the version number.
 

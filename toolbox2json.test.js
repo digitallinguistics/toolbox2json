@@ -1,7 +1,6 @@
 /* eslint-disable
   max-nested-callbacks,
   no-sync,
-  no-undefined,
 */
 
 import convert           from './toolbox2json.js';
@@ -46,14 +45,48 @@ describe(`toolbox2json`, () => {
     expect(() => convert()).to.throwError(`filePath`);
   });
 
-  specify(`option: out`, () => {
+  specify(`option: ndjson = false (default)`, async () => {
 
-    const returnValue = convert(crkPath, { out: outPath, silent: true });
-    expect(returnValue).to.be(undefined);
+    await convert(crkPath, {
+      out:    outPath,
+      silent: true,
+    });
 
+    const text = fs.readFileSync(outPath, `utf8`);
+
+    try {
+      JSON.parse(text);
+    } catch (e) {
+      expect().fail(e.message);
+    }
+
+  });
+
+  specify(`option: ndjson = true`, async () => {
+
+    await convert(crkPath, {
+      ndjson: true,
+      out:    outPath,
+      silent: true,
+    });
+
+    const text  = fs.readFileSync(outPath, `utf8`);
+    const lines = text.split(/\r?\n/gu);
+
+    lines.forEach(line => {
+      try {
+        JSON.parse(line);
+      } catch (e) {
+        expect().fail(e.message);
+      }
+    });
+
+  });
+
+  specify(`option: out`, async () => {
+    await convert(crkPath, { out: outPath, silent: true });
     const exists = fs.existsSync(outPath);
     expect(exists).to.be(true);
-
   });
 
 });

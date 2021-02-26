@@ -21,7 +21,8 @@ program
 .description(`parse the Toolbox file`, {
   filePath: `path to the Toolbox file`,
 })
-.option(`-o, --out`, `path for the output JSON file`)
+.option(`-n, --ndjson`, `output newline-delimited JSON`, false)
+.option(`-o, --out <outPath>`, `path for the output JSON file`)
 .option(`-s, --silent`, `silences console output`, false)
 .action((filePath, options) => {
 

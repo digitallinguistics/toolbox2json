@@ -1,63 +1,79 @@
-/* eslint-disable
-  max-statements,
-*/
-
 import createSpinner from 'ora';
 import fs            from 'fs';
+import os            from 'os';
 import readLine      from 'readline';
 import { Transform } from 'stream';
 
 const blankLineRegExp = /^\s*$/u;
-let   lines           = []; // holder for current lines until end of entry is reached
 
-function createJS2JSONStream() {
-  return new Transform({
+/**
+ * Transform Stream that transforms a stream of JavaScript objects to JSON.
+ * @extends Transform
+ */
+class JS2JSONStream extends Transform {
 
-    writableObjectMode: true,
+  /**
+   * Create a new JS2JSONStream
+   * @param {String} separator The separator to use between JSON objects.
+   */
+  constructor({ separator }) {
+    super({ writableObjectMode: true });
+    this.separator = separator;
+    this.sep       = ``; // the first chunk is not preceded by a separator
+  }
 
-    transform(entry, encoding, callback) {
-      const json = JSON.stringify(entry);
-      this.push(json);
-      this.push(`,`);
-      callback();
-    },
+  _transform(entry, encoding, callback) {
+    const json = JSON.stringify(entry);
+    this.push(this.sep);
+    this.push(json);
+    this.sep = this.separator; // update after first chunk
+    callback();
+  }
 
-  });
 }
 
-function createLines2JSStream() {
-  return new Transform({
+/**
+ * A Transform Stream that transforms an array of Toolbox lines into a JavaScript object representing a single entry.
+ * @extends Transform
+ */
+class Lines2JSStream extends Transform {
 
-    readableObjectMode: true,
-    writableObjectMode: true,
+  constructor() {
 
-    transform(line, encoding, callback) {
+    super({
+      readableObjectMode: true,
+      writableObjectMode: true,
+    });
 
-      // a blank line indicates the end of a Toolbox entry
-      const isBlank = blankLineRegExp.test(line);
+    this.lines = [];
 
-      if (isBlank) {
+  }
 
-        try {
-          const entry = parseLines(lines); // attempt to parse lines
-          this.push(entry);                // write entry to stream
-        } catch (e) {
-          return callback(e);
-        } finally {
-          lines = [];                      // reset lines for next entry
-        }
+  _transform(line, encoding, callback) {
 
-      } else {
+    const isBlank = blankLineRegExp.test(line);
 
-        lines.push(line);                 // add line to current entry
+    if (isBlank) {                            // a blank line indicates the end of a Toolbox entry; ready to parse entry
 
+      try {
+        const entry = parseLines(this.lines); // attempt to parse lines
+        this.push(entry);                     // write entry to stream
+      } catch (e) {
+        return callback(e);                   // throw parsing errors
+      } finally {
+        this.lines = [];                      // reset lines for next entry
       }
 
-      callback();
+    } else {                                  // end of entry not yet reached
 
-    },
+      this.lines.push(line);                  // add line to current entry
 
-  });
+    }
+
+    callback();
+
+  }
+
 }
 
 /**
@@ -69,7 +85,11 @@ function parseLines(lines) {
   return lines;
 }
 
-export default function toolbox2json(filePath, { out, silent = false } = {}) {
+export default function toolbox2json(filePath, {
+  ndjson = false,
+  out,
+  silent = false,
+} = {}) {
 
   // validation
 
@@ -99,7 +119,7 @@ export default function toolbox2json(filePath, { out, silent = false } = {}) {
     terminal: false,
   });
 
-  const lines2js = createLines2JSStream();
+  const lines2js = new Lines2JSStream();
 
   // subscribe to stream events
 
@@ -116,14 +136,26 @@ export default function toolbox2json(filePath, { out, silent = false } = {}) {
 
   // stream the resulting JSON to a file
 
-  const js2json     = createJS2JSONStream();
-  const writeStream = fs.createWriteStream(out);
+  return new Promise((resolve, reject) => {
 
-  writeStream.write(`[`);
-  readStream.on(`end`, () => writeStream.write(`]`));
+    const separator   = ndjson ? os.EOL : `,`;
+    const js2json     = new JS2JSONStream({ separator });
+    const writeStream = fs.createWriteStream(out);
 
-  lines2js
-  .pipe(js2json)
-  .pipe(writeStream);
+    lines2js.on(`error`, reject);
+    js2json.on(`error`, reject);
+    writeStream.on(`error`, reject);
+    writeStream.on(`finish`, resolve);
+
+    if (!ndjson) {
+      writeStream.write(`[`);
+      js2json.on(`end`, () => writeStream.end(`]`));
+    }
+
+    lines2js
+    .pipe(js2json)
+    .pipe(writeStream);
+
+  });
 
 }
