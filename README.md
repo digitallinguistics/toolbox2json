@@ -1,4 +1,4 @@
-# toolbox2json [<span style="color: red;">WORK IN PROGRESS</span>]
+# toolbox2json
 
 A Node / JavaScript library for converting [SIL][SIL] [Toolbox][Toolbox] dictionary files to [JSON][JSON]. Useful for any linguist working with a Toolbox dictionary database. Runs as a module or on the command line.
 
