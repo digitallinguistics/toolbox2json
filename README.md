@@ -49,13 +49,14 @@ To run the library from the command line, use `toolbox2json <filePath>`. This wi
 
 ## Options
 
-Module   | Command Line | Flag | Type    | Default | Description
----------|--------------|------|---------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-         | `--help`     | `-h` |         |         | Display help.
-`ndjson` | `--ndjson`   | `-n` | Boolean | `false` | Outputs newline-delimited JSON.
-`out`    | `--out`      | `-o` | String  |         | The path where the JSON file should be saved. If this option is provided, the module will return a Promise that resolves when the operation is complete, and no JSON data will be displayed on the command line. Otherwise, the module returns a readable stream of JavaScript objects (one for each entry in the Toolbox file).
-`silent` | `--silent`   | `-s` | Boolean | `false` | Silences console output (except for the converted JSON).
-         | `--version`  | `-v` |         |         | Output the version number.
+Module       | Command Line    | Flag | Type     | Default | Description
+-------------|-----------------|------|----------|---------|------------
+             | `--help`        | `-h` |          |         | Display help.
+`parseError` | `--parse-error` | `-e` | `"warn"` |         | How to handle errors when parsing records. `"error"`: Stop and throw an error. `"none"`: Fail silently and continue. No object is created for that entry. `"object"`: Return a ParseError object for that entry. `"warn"`: Throw a warning and continue (_default_).
+`ndjson`     | `--ndjson`      | `-n` | Boolean  | `false` | Outputs newline-delimited JSON.
+`out`        | `--out`         | `-o` | String   |         | The path where the JSON file should be saved. If this option is provided, the module will return a Promise that resolves when the operation is complete, and no JSON data will be displayed on the command line. Otherwise, the module returns a readable stream of JavaScript objects (one for each entry in the Toolbox file).
+`silent`     | `--silent`      | `-s` | Boolean  | `false` | Silences console output (except for the converted JSON).
+             | `--version`     | `-v` |          |         | Output the version number.
 
 ## Streaming Data
 

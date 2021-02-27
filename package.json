@@ -21,7 +21,7 @@
     "name": "Daniel W. Hieber",
     "url": "https://danielhieber.com"
   },
-  "main": "toolbox2json.js",
+  "main": "src/toolbox2json.js",
   "bin": {
     "toolbox2json": "./bin/toolbox2json.js"
   },
@@ -44,6 +44,6 @@
     "ora": "^5.3.0"
   },
   "scripts": {
-    "test": "mocha toolbox2json.test.js"
+    "test": "mocha src/toolbox2json.test.js"
   }
 }

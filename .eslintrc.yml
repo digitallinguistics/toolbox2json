@@ -157,9 +157,7 @@ rules:
   - warn
   - always
   - exceptAfterSingleLine: true
-  max-classes-per-file:
-  - warn
-  - 2
+  max-classes-per-file: off
   max-depth: warn
   max-len:
   - warn
@@ -333,6 +331,7 @@ rules:
       IfStatement: true
       ImportDeclaration: true
       ImportSpecifier: true
+      SwitchCase: true
       VariableDeclaration: true
       VariableDeclarator: true
   no-multi-str: error

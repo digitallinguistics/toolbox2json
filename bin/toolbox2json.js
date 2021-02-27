@@ -4,7 +4,7 @@ import { Command }       from 'commander/esm.mjs';
 import { fileURLToPath } from 'url';
 import path              from 'path';
 import { readFileSync }  from 'fs';
-import toolbox2json      from '../toolbox2json.js';
+import toolbox2json      from '../src/toolbox2json.js';
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 

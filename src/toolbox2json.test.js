@@ -12,7 +12,8 @@ import { Transform }     from 'stream';
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 
-const crkPath = path.join(currentDir, `./data/crk.db`);
+const badPath = path.join(currentDir, `../data/bad.db`);
+const crkPath = path.join(currentDir, `../data/crk.db`);
 const outPath = `test.json`;
 
 describe(`toolbox2json`, () => {
@@ -80,6 +81,68 @@ describe(`toolbox2json`, () => {
         expect().fail(e.message);
       }
     });
+
+  });
+
+  specify(`option: parseError = "error"`, async () => {
+
+    try {
+      await convert(badPath, {
+        out:        outPath,
+        parseError: `error`,
+        silent:     true,
+      });
+    } catch (e) {
+      expect(e.name).to.be(`ParseError`);
+    }
+
+  });
+
+  specify(`option: parseError = "none"`, async () => {
+
+    await convert(badPath, {
+      out:        outPath,
+      parseError: `none`,
+      silent:     true,
+    });
+
+    const json    = fs.readFileSync(outPath, `utf8`);
+    const entries = JSON.parse(json);
+
+    expect(entries).to.have.length(0);
+
+  });
+
+  specify(`option: parseError = "object"`, async () => {
+
+    await convert(badPath, {
+      out:        outPath,
+      parseError: `object`,
+      silent:     true,
+    });
+
+    const json     = fs.readFileSync(outPath, `utf8`);
+    const entries  = JSON.parse(json);
+    const { name } = entries.pop();
+
+    expect(name).to.be(`ParseError`);
+
+  });
+
+  specify(`option: parseError = "warn"`, async () => {
+
+    // stub console.warn to prevent console output
+    const original = console.warn;
+    console.warn = () => {}; // eslint-disable-line no-empty-function
+
+    await convert(badPath, {
+      out:        outPath,
+      parseError: `warn`,
+      silent:     true,
+    });
+
+    // reset console.warn to original method
+    console.warn = original.bind(console);
 
   });
 

@@ -1,6 +1,7 @@
 import createSpinner from 'ora';
 import fs            from 'fs';
 import os            from 'os';
+import parseLines    from './parseLines.js';
 import readLine      from 'readline';
 import { Transform } from 'stream';
 
@@ -38,15 +39,22 @@ class JS2JSONStream extends Transform {
  */
 class Lines2JSStream extends Transform {
 
-  constructor() {
+  constructor({ parseError, silent }) {
 
     super({
       readableObjectMode: true,
       writableObjectMode: true,
     });
 
-    this.lines = [];
+    this.fileHeader = true; // the first set of lines is the file header
+    this.lines      = [];
+    this.parseError = parseError;
+    this.silent     = silent;
 
+  }
+
+  _flush(callback) {
+    this.parseLines(callback);
   }
 
   _transform(line, encoding, callback) {
@@ -55,37 +63,61 @@ class Lines2JSStream extends Transform {
 
     if (isBlank) {                            // a blank line indicates the end of a Toolbox entry; ready to parse entry
 
-      try {
-        const entry = parseLines(this.lines); // attempt to parse lines
-        this.push(entry);                     // write entry to stream
-      } catch (e) {
-        return callback(e);                   // throw parsing errors
-      } finally {
-        this.lines = [];                      // reset lines for next entry
+      if (this.fileHeader) {                  // ignore file header lines
+        this.lines      = [];
+        this.fileHeader = false;
+        return callback();
       }
+
+      this.parseLines(callback);              // parse current set of lines into a JavaScript object
 
     } else {                                  // end of entry not yet reached
 
       this.lines.push(line);                  // add line to current entry
+      callback();
 
     }
 
-    callback();
+  }
+
+  parseLines(callback) {
+
+    try {
+
+      const entry = parseLines(this.lines); // attempt to parse lines
+      this.push(entry);                     // write entry to stream
+
+    } catch (e) {
+
+      const error = new ParseError(e.message);
+
+      switch (this.parseError) {
+        case `error`:  return callback(error);
+        case `none`:   break;
+        case `object`: this.push(error); break;
+        default:       if (!this.silent) console.warn(error);
+      }
+
+    } finally {
+
+      this.lines = [];                      // reset lines for next entry
+      callback();
+
+    }
 
   }
 
 }
 
-/**
- * Parses an array of Toolbox lines into a single JavaScript object
- * @param  {Array}  lines The array of Toolbox lines for an entry
- * @return {Object}
- */
-function parseLines(lines) {
-  return lines;
+class ParseError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = `ParseError`;
+  }
 }
 
 export default function toolbox2json(filePath, {
+  parseError,
   ndjson = false,
   out,
   silent = false,
@@ -99,15 +131,10 @@ export default function toolbox2json(filePath, {
 
   // set up console spinner
 
-  const spinner = createSpinner(`Converting Toolbox file.`);
-
-  const displayError = e => {
-    spinner.isSilent = false;
-    spinner.fail(e.message);
-  };
+  const spinner      = createSpinner(`Converting Toolbox file.`);
+  const displayError = e => spinner.fail(e.message);
 
   if (silent) spinner.isSilent = true;
-
   spinner.start();
 
   // create streams
@@ -119,7 +146,7 @@ export default function toolbox2json(filePath, {
     terminal: false,
   });
 
-  const lines2js = new Lines2JSStream();
+  const lines2js = new Lines2JSStream({ parseError, silent });
 
   // subscribe to stream events
 
