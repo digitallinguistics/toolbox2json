@@ -63,7 +63,7 @@ On the command line, you can specify field mappings by providing the path to a m
 
 By default, the library copies data from each line into its corresponding JSON property unchanged. If you would like to transform the data, you can do so using the `transforms` option (when using the library as an ES module) or the `‑t, ‑‑transforms` flags (when using the library from the command line). When using transforms on the command line, the value passed to `‑t` or `‑‑transforms` should be the path to a JavaScript file that exports a single object containing the transformation methods.
 
-The object passed to the `transforms` option or exported by the transforms file should have methods for each property whose data would like to transform. These methods will be passed the data for that line as an argument. Your method should transform the data and return it in the desired format. For example, if you would like to transform data in the `\txn` field to lowercase, your `transforms` object might look like this:
+The object passed to the `transforms` option or exported by the transforms file should have methods for each property whose data you would like to transform. These methods will be passed the data for that line as an argument. Your method should transform the data and return it in the desired format. For example, if you would like to transform data in the `\txn` field to lowercase, your `transforms` object might look like this:
 
 ```js
 const transforms = {
@@ -100,9 +100,9 @@ const transforms = {
 
 ## Streaming Data
 
-By default, calling the `toolbox2json` function returns a readable stream of JavaScript objects (where each object represents one entry in the Toolbox file), which you can subscribe to using the `data` event. (If the `out` option is provided, nothing is returned from the function.)
+By default, calling the `toolbox2json` function returns a readable stream of JavaScript objects (where each object represents one entry in the Toolbox file), which you can subscribe to using the `data` event. (If the `out` option is provided, the function returns a Promise that resolves when the JSON file is done being written instead.)
 
-In this example, each JavaScript object is converted to JSON, and streamed to the `my-data.json` file.
+In this example, each JavaScript object is converted to JSON, and streamed to the `my-data.json` file. (This example is rather pointless, however, since the library already creates a JSON file for you when you provide an `out` option. The example merely illustrates how you can subscribe to the data stream.)
 
 ```js
 import convert       from '@digitallinguistics/toolbox2json';
