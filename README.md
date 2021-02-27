@@ -47,7 +47,7 @@ import convert from '@digitallinguistics/toolbox2json';
 convert(`./my-data.db`, { out: `my-data.json` });
 ```
 
-To run the library from the command line, use `toolbox2json <filePath>`. This will print the results to the console by default. To save the JSON output to a file, use the `--out` option or `-o` flag: `toolbox2json <filePath> --out <jsonPath>`. To see the full list of command line options, run `toolbox2json --help`.
+To run the library from the command line, use `toolbox2json <filePath>`. This will print the results to the console by default. To save the JSON output to a file, use the `‑‑out` option or `‑o` flag: `toolbox2json <filePath> ‑‑out <jsonPath>`. To see the full list of command line options, run `toolbox2json ‑‑help`.
 
 ## Field Mappings
 
@@ -57,7 +57,7 @@ If the Toolbox entry contains multiple instances of the same line marker, they w
 
 If you would like to customize the property names, use the `mappings` option. This should be an object mapping line markers (not including the initial backslash `\`) to property names.
 
-On the command line, you can specify field mappings by providing the path to a mappings config file using the `-m, --mappings` option. This file can be either a JSON or YAML document.
+On the command line, you can specify field mappings by providing the path to a mappings config file using the `‑m, ‑‑mappings` option. This file can be either a JSON or YAML document.
 
 ## Transforming Data
 
