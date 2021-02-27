@@ -10,27 +10,40 @@ function getLineData(line) {
 }
 
 /**
+ * A no-op method to use when data does not need transforming.
+ * @param  {String|Array} data The line data
+ * @return {String|Array}      Returns the input
+ */
+function noTransform(data) {
+  return data;
+}
+
+/**
  * Parses an array of Toolbox lines into a single JavaScript object
- * @param  {Array}  lines The array of Toolbox lines for an entry
+ * @param  {Array}  lines      The array of Toolbox lines for an entry
+ * @param  {Object} mappings   An object mapping line markers to property names
+ * @param  {Object} transforms An object of transformation methods to apply to lines
  * @return {Object}
  */
-export default function parseLines(lines, mappings) {
+export default function parseLines(lines, mappings, transforms) {
 
   const linesMap = lines
   .map(getLineData)
   .reduce((map, { marker, data: newData }) => {
 
-    const propName = mappings[marker] ?? marker;
+    const propName        = mappings[marker] ?? marker;
+    const transform       = transforms[marker] ?? noTransform;
+    const transformedData = transform(newData);
 
     if (map.has(propName)) {
 
       const currentData = map.get(propName);
-      if (Array.isArray(currentData)) currentData.push(newData);
-      else map.set(propName, [currentData, newData]);
+      if (Array.isArray(currentData)) currentData.push(transformedData);
+      else map.set(propName, [currentData, transformedData]);
 
     } else {
 
-      map.set(propName, newData);
+      map.set(propName, transformedData);
 
     }
 

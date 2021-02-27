@@ -39,7 +39,7 @@ class JS2JSONStream extends Transform {
  */
 class Lines2JSStream extends Transform {
 
-  constructor({ mappings, parseError, silent }) {
+  constructor({ mappings, parseError, silent, transforms }) {
 
     super({
       readableObjectMode: true,
@@ -51,6 +51,7 @@ class Lines2JSStream extends Transform {
     this.mappings   = mappings;
     this.parseError = parseError;
     this.silent     = silent;
+    this.transforms = transforms;
 
   }
 
@@ -91,6 +92,7 @@ class Lines2JSStream extends Transform {
       const entry = parseLines(
         this.lines,
         this.mappings,
+        this.transforms,
       );
 
       this.push(entry); // write entry to stream
@@ -126,10 +128,11 @@ class ParseError extends Error {
 
 export default function toolbox2json(filePath, {
   parseError,
-  mappings = {},
-  ndjson = false,
+  mappings   = {},
+  ndjson     = false,
   out,
-  silent = false,
+  silent     = false,
+  transforms = {},
 } = {}) {
 
   // validation
@@ -155,7 +158,12 @@ export default function toolbox2json(filePath, {
     terminal: false,
   });
 
-  const lines2js = new Lines2JSStream({ mappings, parseError, silent });
+  const lines2js = new Lines2JSStream({
+    mappings,
+    parseError,
+    silent,
+    transforms,
+  });
 
   // subscribe to stream events
 

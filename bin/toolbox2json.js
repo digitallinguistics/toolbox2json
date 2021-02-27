@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 
-import { Command }       from 'commander/esm.mjs';
-import { fileURLToPath } from 'url';
-import path              from 'path';
-import { readFileSync }  from 'fs';
-import toolbox2json      from '../src/toolbox2json.js';
+import { Command }           from 'commander/esm.mjs';
+import { load as parseYAML } from 'js-yaml';
+import path                  from 'path';
+import { readFileSync }      from 'fs';
+import toolbox2json          from '../src/toolbox2json.js';
+
+import { fileURLToPath, pathToFileURL } from 'url';
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -21,19 +23,55 @@ program
 .description(`parse the Toolbox file`, {
   filePath: `path to the Toolbox file`,
 })
+.option(`-m, --mappings <mappingsPath>`, `path to file specifying line marker > property name mappings`)
 .option(`-n, --ndjson`, `output newline-delimited JSON`, false)
 .option(`-o, --out <outPath>`, `path for the output JSON file`)
 .option(`-s, --silent`, `silences console output`, false)
-.action((filePath, options) => {
+.option(`-t, --transforms <transformsPath>`, `path to transformations file`)
+.action(async (filePath, options) => {
 
-  const { out } = options;
+  const {
+    mappings:   mappingsPath,
+    out:        outPath,
+    transforms: transformsPath,
+  } = options;
+
+  // get mappings from file
+
+  let mappings = {};
+
+  if (mappingsPath) {
+
+    const mappingsExt  = path.extname(mappingsPath);
+    const mappingsText = readFileSync(mappingsPath, `utf8`);
+
+    if (mappingsExt === `.json`) {
+      mappings = JSON.parse(mappingsText);
+    } else {
+      mappings = parseYAML(mappingsText);
+    }
+
+  }
+
+  // get transforms from file
+
+  let transforms = {};
+
+  if (transformsPath) {
+    const importPath         = pathToFileURL(path.join(process.cwd(), transformsPath));
+    ({ default: transforms } = await import(importPath));
+  }
+
+  // run module
+
+  Object.assign(options, { mappings, transforms });
 
   const readStream = toolbox2json(filePath, options);
 
-  if (!out) {
+  if (!outPath) {
     readStream.on(`data`, console.info);
   }
 
 });
 
-program.parse(process.argv);
+program.parseAsync(process.argv);

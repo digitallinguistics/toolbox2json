@@ -14,8 +14,8 @@ import { Transform }     from 'stream';
 const currentDir   = path.dirname(fileURLToPath(import.meta.url));
 const { readFile } = fs.promises;
 
-const badPath = path.join(currentDir, `../data/bad.db`);
-const crkPath = path.join(currentDir, `../data/crk.db`);
+const badPath = path.join(currentDir, `../test/bad.db`);
+const crkPath = path.join(currentDir, `../test/crk.db`);
 const outPath = `test.json`;
 
 describe(`toolbox2json`, () => {
@@ -196,6 +196,28 @@ describe(`toolbox2json`, () => {
     await convert(crkPath, { out: outPath, silent: true });
     const exists = fs.existsSync(outPath);
     expect(exists).to.be(true);
+  });
+
+  specify(`option: transforms`, async () => {
+
+    const { default: transforms } = await import(`../test/transforms.js`);
+
+    await convert(crkPath, {
+      mappings: { sro: `txn-sro` },
+      out:      outPath,
+      silent:   true,
+      transforms,
+    });
+
+    const json   = await readFile(outPath, `utf8`);
+    const [A, B] = JSON.parse(json);
+
+    expect(A[`txn-sro`]).to.be(`ACÂHKOS`);
+    expect(A.dl).to.be.an(Array);
+    expect(A.dl).to.have.length(2);
+    expect(B.dl).to.be.an(Array);
+    expect(B.dl).to.have.length(1);
+
   });
 
 });

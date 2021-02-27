@@ -15,9 +15,9 @@ If you use this library for research purposes, please consider citing it using t
 
 ## Contents
 <!-- TOC -->
-- [Contents](#contents)
 - [Basic Usage](#basic-usage)
 - [Field Mappings](#field-mappings)
+- [Transforming Data](#transforming-data)
 - [Options](#options)
 - [Streaming Data](#streaming-data)
 - [Contributing](#contributing)
@@ -53,11 +53,37 @@ To run the library from the command line, use `toolbox2json <filePath>`. This wi
 
 By default, the library will use line markers as property names when converting data. For example, if the Toolbox file has a field `\txn` for transcriptions, that would be converted to `{ "txn": "<data>" }`.
 
-If the Toolbox entry contains multiple instances of the same line marker, they will be converted to an array by default. For example, if the Toolbox file has two `\gl` fields containing the data `fire` and `light`, those would be converted to `{ "gl": ["fire", "light"] }`. If you would like to customize this behavior, use the `transform` option.
+If the Toolbox entry contains multiple instances of the same line marker, they will be converted to an array by default. For example, if the Toolbox file has two `\gl` fields containing the data `fire` and `light`, those would be converted to `{ "gl": ["fire", "light"] }`. If you would like to customize this behavior, use the `transforms` option.
 
 If you would like to customize the property names, use the `mappings` option. This should be an object mapping line markers (not including the initial backslash `\`) to property names.
 
 On the command line, you can specify field mappings by providing the path to a mappings config file using the `-m, --mappings` option. This file can be either a JSON or YAML document.
+
+## Transforming Data
+
+By default, the library copies data from each line into its corresponding JSON property unchanged. If you would like to transform the data, you can do so using the `transforms` option (when using the library as an ES module) or the `-t, --transforms` flags (when using the library from the command line). When using transforms on the command line, the value passed to `-t` or `--transforms` should be the path to a JavaScript file that exports a single object containing the transformation methods.
+
+The object passed to the `transforms` option or exported by the transforms file should have methods for each property whose data would like to transform. These methods will be passed the data for that line as an argument. Your method should transform the data and return it in the desired format. For example, if you would like to transform data in the `\txn` field to lowercase, your `transforms` object might look like this:
+
+```js
+const transforms = {
+  txn(data) {
+    return data.toLowerCase();
+  }
+};
+```
+
+**NOTE:** The names of the transform methods should be based on the names of _original_ line markers, not the new property names specified in the `mappings` option.
+
+If there are multiple instances of a marker in a Toolbox entry, the `data` argument will be an array containing all the lines with that marker. For example, if the Toolbox file has two `\gl` fields containing the data `fire` and `light`, the `data` argument will be `["fire", "light"]`. If a property should always be an array, you may want to check for the case where only 1 line is provided, and convert `data` to an array if so:
+
+```js
+const transforms = {
+  gl(data) {
+    return Array.isArray(data) : data : [data];
+  }
+}
+```
 
 ## Options
 
@@ -70,6 +96,7 @@ Module       | Command Line    | Flag | Type     | Default | Description
 `out`        | `--out`         | `-o` | String   |         | The path where the JSON file should be saved. If this option is provided, the module will return a Promise that resolves when the operation is complete, and no JSON data will be displayed on the command line. Otherwise, the module returns a readable stream of JavaScript objects (one for each entry in the Toolbox file).
 `silent`     | `--silent`      | `-s` | Boolean  | `false` | Silences console output (except for the converted JSON).
              | `--version`     | `-v` |          |         | Output the version number.
+`transform`  | `--transform`   | `-t` | Object   | `{}`    | An object containing methods for transforming field data. See [Transforming Data](#transforming-data)
 
 ## Streaming Data
 
@@ -102,7 +129,7 @@ readableStream
 * Find a bug? Want to request a feature? [Open an issue.][new-issue]
 * Pull requests are welcome!
 * Tests are run using [Mocha][Mocha] and [expect.js][expect]. You can run them locally with `npm test`.
-* Sample data for testing are located in `/data`.
+* Sample data for testing are located in `/test`.
 
 <!-- LINKS -->
 [expect]:    https://github.com/Automattic/expect.js
