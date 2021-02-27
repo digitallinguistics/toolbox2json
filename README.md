@@ -61,7 +61,7 @@ On the command line, you can specify field mappings by providing the path to a m
 
 ## Transforming Data
 
-By default, the library copies data from each line into its corresponding JSON property unchanged. If you would like to transform the data, you can do so using the `transforms` option (when using the library as an ES module) or the `-t, --transforms` flags (when using the library from the command line). When using transforms on the command line, the value passed to `-t` or `--transforms` should be the path to a JavaScript file that exports a single object containing the transformation methods.
+By default, the library copies data from each line into its corresponding JSON property unchanged. If you would like to transform the data, you can do so using the `transforms` option (when using the library as an ES module) or the `‑t, ‑‑transforms` flags (when using the library from the command line). When using transforms on the command line, the value passed to `‑t` or `‑‑transforms` should be the path to a JavaScript file that exports a single object containing the transformation methods.
 
 The object passed to the `transforms` option or exported by the transforms file should have methods for each property whose data would like to transform. These methods will be passed the data for that line as an argument. Your method should transform the data and return it in the desired format. For example, if you would like to transform data in the `\txn` field to lowercase, your `transforms` object might look like this:
 
