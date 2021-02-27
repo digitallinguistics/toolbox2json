@@ -1,6 +1,6 @@
 # toolbox2json [<span style="color: red;">WORK IN PROGRESS</span>]
 
-A Node / JavaScript library for converting [SIL][SIL] [Toolbox][Toolbox] files in [SFM format][SFM] to [JSON][JSON]. Useful for any linguist working with Toolbox data. Runs as a module or on the command line.
+A Node / JavaScript library for converting [SIL][SIL] [Toolbox][Toolbox] dictionary files to [JSON][JSON]. Useful for any linguist working with a Toolbox dictionary database. Runs as a module or on the command line.
 
 If you use this library for research purposes, please consider citing it using the following model:
 
@@ -15,7 +15,9 @@ If you use this library for research purposes, please consider citing it using t
 
 ## Contents
 <!-- TOC -->
+- [Contents](#contents)
 - [Basic Usage](#basic-usage)
+- [Field Mappings](#field-mappings)
 - [Options](#options)
 - [Streaming Data](#streaming-data)
 - [Contributing](#contributing)
@@ -47,12 +49,23 @@ convert(`./my-data.db`, { out: `my-data.json` });
 
 To run the library from the command line, use `toolbox2json <filePath>`. This will print the results to the console by default. To save the JSON output to a file, use the `--out` option or `-o` flag: `toolbox2json <filePath> --out <jsonPath>`. To see the full list of command line options, run `toolbox2json --help`.
 
+## Field Mappings
+
+By default, the library will use line markers as property names when converting data. For example, if the Toolbox file has a field `\txn` for transcriptions, that would be converted to `{ "txn": "<data>" }`.
+
+If the Toolbox entry contains multiple instances of the same line marker, they will be converted to an array by default. For example, if the Toolbox file has two `\gl` fields containing the data `fire` and `light`, those would be converted to `{ "gl": ["fire", "light"] }`. If you would like to customize this behavior, use the `transform` option.
+
+If you would like to customize the property names, use the `mappings` option. This should be an object mapping line markers (not including the initial backslash `\`) to property names.
+
+On the command line, you can specify field mappings by providing the path to a mappings config file using the `-m, --mappings` option. This file can be either a JSON or YAML document.
+
 ## Options
 
 Module       | Command Line    | Flag | Type     | Default | Description
 -------------|-----------------|------|----------|---------|------------
              | `--help`        | `-h` |          |         | Display help.
 `parseError` | `--parse-error` | `-e` | `"warn"` |         | How to handle errors when parsing records. `"error"`: Stop and throw an error. `"none"`: Fail silently and continue. No object is created for that entry. `"object"`: Return a ParseError object for that entry. `"warn"`: Throw a warning and continue (_default_).
+`mappings`   | `--mappings`    | `-m` | Object   |         | An object mapping line markers to property names (if using as an ES module), or the path to a JSON or YAML file where the mappings live (if using on the command line).
 `ndjson`     | `--ndjson`      | `-n` | Boolean  | `false` | Outputs newline-delimited JSON.
 `out`        | `--out`         | `-o` | String   |         | The path where the JSON file should be saved. If this option is provided, the module will return a Promise that resolves when the operation is complete, and no JSON data will be displayed on the command line. Otherwise, the module returns a readable stream of JavaScript objects (one for each entry in the Toolbox file).
 `silent`     | `--silent`      | `-s` | Boolean  | `false` | Silences console output (except for the converted JSON).
@@ -101,7 +114,6 @@ readableStream
 [new-issue]: https://github.com/digitallinguistics/toolbox2json/issues/new
 [npm]:       https://www.npmjs.com/
 [releases]:  https://github.com/digitallinguistics/toolbox2json/releases
-[SFM]:       https://www.angelfire.com/planet/linguisticsisfun/ToolboxReferenceManual.pdf
 [SIL]:       https://www.sil.org/
 [status]:    https://github.com/digitallinguistics/toolbox2json/actions/workflows/test.yml
 [Toolbox]:   https://software.sil.org/toolbox/

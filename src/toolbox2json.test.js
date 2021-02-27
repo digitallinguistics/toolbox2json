@@ -1,6 +1,7 @@
 /* eslint-disable
   max-nested-callbacks,
   no-sync,
+  no-undefined,
 */
 
 import convert           from './toolbox2json.js';
@@ -10,7 +11,8 @@ import fs                from 'fs';
 import path              from 'path';
 import { Transform }     from 'stream';
 
-const currentDir = path.dirname(fileURLToPath(import.meta.url));
+const currentDir   = path.dirname(fileURLToPath(import.meta.url));
+const { readFile } = fs.promises;
 
 const badPath = path.join(currentDir, `../data/bad.db`);
 const crkPath = path.join(currentDir, `../data/crk.db`);
@@ -18,7 +20,7 @@ const outPath = `test.json`;
 
 describe(`toolbox2json`, () => {
 
-  afterEach(() => {
+  after(() => {
     const exists = fs.existsSync(outPath);
     if (exists) fs.unlinkSync(outPath);
   });
@@ -46,6 +48,50 @@ describe(`toolbox2json`, () => {
     expect(() => convert()).to.throwError(`filePath`);
   });
 
+  specify(`option: mappings (default)`, async () => {
+
+    await convert(crkPath, {
+      out:    outPath,
+      silent: true,
+    });
+
+    const json          = await readFile(outPath, `utf8`);
+    const [{ sro, dl }] = JSON.parse(json);
+
+    expect(sro).to.be(`acâhkos`);
+    expect(dl).to.be.an(Array);
+    expect(dl).to.have.length(2);
+
+  });
+
+  specify(`option: mappings (custom)`, async () => {
+
+    await convert(crkPath, {
+      mappings: {
+        mrp: `morphemes`,
+        sro: `txn-sro`,
+      },
+      out:    outPath,
+      silent: true,
+    });
+
+    const json    = await readFile(outPath, `utf8`);
+    const [entry] = JSON.parse(json);
+
+    const {
+      morphemes,
+      mrp,
+      sro, 'txn-sro': txn,
+    } = entry;
+
+    expect(morphemes).to.be.an(Array);
+    expect(morphemes).to.have.length(2);
+    expect(mrp).to.be(undefined);
+    expect(sro).to.be(undefined);
+    expect(txn).to.be(`acâhkos`);
+
+  });
+
   specify(`option: ndjson = false (default)`, async () => {
 
     await convert(crkPath, {
@@ -53,7 +99,7 @@ describe(`toolbox2json`, () => {
       silent: true,
     });
 
-    const text = fs.readFileSync(outPath, `utf8`);
+    const text = await readFile(outPath, `utf8`);
 
     try {
       JSON.parse(text);
@@ -71,7 +117,7 @@ describe(`toolbox2json`, () => {
       silent: true,
     });
 
-    const text  = fs.readFileSync(outPath, `utf8`);
+    const text  = await readFile(outPath, `utf8`);
     const lines = text.split(/\r?\n/gu);
 
     lines.forEach(line => {
@@ -106,7 +152,7 @@ describe(`toolbox2json`, () => {
       silent:     true,
     });
 
-    const json    = fs.readFileSync(outPath, `utf8`);
+    const json    = await readFile(outPath, `utf8`);
     const entries = JSON.parse(json);
 
     expect(entries).to.have.length(0);
@@ -121,7 +167,7 @@ describe(`toolbox2json`, () => {
       silent:     true,
     });
 
-    const json     = fs.readFileSync(outPath, `utf8`);
+    const json     = await readFile(outPath, `utf8`);
     const entries  = JSON.parse(json);
     const { name } = entries.pop();
 

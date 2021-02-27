@@ -39,7 +39,7 @@ class JS2JSONStream extends Transform {
  */
 class Lines2JSStream extends Transform {
 
-  constructor({ parseError, silent }) {
+  constructor({ mappings, parseError, silent }) {
 
     super({
       readableObjectMode: true,
@@ -48,11 +48,14 @@ class Lines2JSStream extends Transform {
 
     this.fileHeader = true; // the first set of lines is the file header
     this.lines      = [];
+    this.mappings   = mappings;
     this.parseError = parseError;
     this.silent     = silent;
 
   }
 
+  // This runs when the stream has no more data, but before calling "end".
+  // It allows you to process any remaining data in the pipeline.
   _flush(callback) {
     this.parseLines(callback);
   }
@@ -61,19 +64,19 @@ class Lines2JSStream extends Transform {
 
     const isBlank = blankLineRegExp.test(line);
 
-    if (isBlank) {                            // a blank line indicates the end of a Toolbox entry; ready to parse entry
+    if (isBlank) {               // a blank line indicates the end of a Toolbox entry; ready to parse entry
 
-      if (this.fileHeader) {                  // ignore file header lines
+      if (this.fileHeader) {     // ignore file header lines
         this.lines      = [];
         this.fileHeader = false;
         return callback();
       }
 
-      this.parseLines(callback);              // parse current set of lines into a JavaScript object
+      this.parseLines(callback); // parse current set of lines into a JavaScript object
 
-    } else {                                  // end of entry not yet reached
+    } else {                     // end of entry not yet reached
 
-      this.lines.push(line);                  // add line to current entry
+      this.lines.push(line);     // add line to current entry
       callback();
 
     }
@@ -84,8 +87,13 @@ class Lines2JSStream extends Transform {
 
     try {
 
-      const entry = parseLines(this.lines); // attempt to parse lines
-      this.push(entry);                     // write entry to stream
+      // attempt to parse lines
+      const entry = parseLines(
+        this.lines,
+        this.mappings,
+      );
+
+      this.push(entry); // write entry to stream
 
     } catch (e) {
 
@@ -100,7 +108,7 @@ class Lines2JSStream extends Transform {
 
     } finally {
 
-      this.lines = [];                      // reset lines for next entry
+      this.lines = []; // reset lines for next entry
       callback();
 
     }
@@ -118,6 +126,7 @@ class ParseError extends Error {
 
 export default function toolbox2json(filePath, {
   parseError,
+  mappings = {},
   ndjson = false,
   out,
   silent = false,
@@ -146,7 +155,7 @@ export default function toolbox2json(filePath, {
     terminal: false,
   });
 
-  const lines2js = new Lines2JSStream({ parseError, silent });
+  const lines2js = new Lines2JSStream({ mappings, parseError, silent });
 
   // subscribe to stream events
 
