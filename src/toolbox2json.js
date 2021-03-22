@@ -39,19 +39,26 @@ class JS2JSONStream extends Transform {
  */
 class Lines2JSStream extends Transform {
 
-  constructor({ mappings, parseError, silent, transforms }) {
+  constructor({
+    mappings,
+    parseError,
+    postprocessor,
+    silent,
+    transforms,
+  }) {
 
     super({
       readableObjectMode: true,
       writableObjectMode: true,
     });
 
-    this.fileHeader = true; // the first set of lines is the file header
-    this.lines      = [];
-    this.mappings   = mappings;
-    this.parseError = parseError;
-    this.silent     = silent;
-    this.transforms = transforms;
+    this.fileHeader  = true; // the first set of lines is the file header
+    this.lines       = [];
+    this.mappings    = mappings;
+    this.parseError  = parseError;
+    this.postprocess = postprocessor;
+    this.silent      = silent;
+    this.transforms  = transforms;
 
   }
 
@@ -95,7 +102,10 @@ class Lines2JSStream extends Transform {
         this.transforms,
       );
 
-      this.push(entry); // write entry to stream
+      // apply postprocessing function
+      const finalEntry = this.postprocess(entry);
+
+      this.push(finalEntry); // write entry to stream
 
     } catch (e) {
 
@@ -137,8 +147,9 @@ export default function toolbox2json(filePath, {
   mappings   = {},
   ndjson     = false,
   out,
-  silent     = false,
-  transforms = {},
+  postprocessor = entry => entry,
+  silent        = false,
+  transforms    = {},
 } = {}) {
 
   // validation
@@ -167,6 +178,7 @@ export default function toolbox2json(filePath, {
   const lines2js = new Lines2JSStream({
     mappings,
     parseError,
+    postprocessor,
     silent,
     transforms,
   });

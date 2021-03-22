@@ -213,6 +213,19 @@ describe(`toolbox2json`, () => {
     expect(exists).to.be(true);
   });
 
+  specify(`option: postprocessor`, async () => {
+
+    const postprocessor = () => ({ postprocessed: true });
+
+    await convert(crkPath, { out: outPath, postprocessor, silent: true });
+
+    const json = await readFile(outPath, `utf8`);
+    const [entry] = JSON.parse(json);
+
+    expect(entry.postprocessed).to.be(true);
+
+  });
+
   specify(`option: transforms`, async () => {
 
     const { default: transforms } = await import(`../test/transforms.js`);

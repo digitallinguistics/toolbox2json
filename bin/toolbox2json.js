@@ -26,14 +26,16 @@ program
 .option(`-m, --mappings <mappingsPath>`, `path to file specifying line marker > property name mappings`)
 .option(`-n, --ndjson`, `output newline-delimited JSON`, false)
 .option(`-o, --out <outPath>`, `path for the output JSON file`)
+.option(`-p, --postprocessor <postprocessorPath>`, `path to the postprocessor file`)
 .option(`-s, --silent`, `silences console output`, false)
 .option(`-t, --transforms <transformsPath>`, `path to transformations file`)
 .action(async (filePath, options) => {
 
   const {
-    mappings:   mappingsPath,
-    out:        outPath,
-    transforms: transformsPath,
+    mappings:      mappingsPath,
+    out:           outPath,
+    postprocessor: postprocessorPath,
+    transforms:    transformsPath,
   } = options;
 
   // get mappings from file
@@ -53,6 +55,15 @@ program
 
   }
 
+  // get postprocessor function from file
+
+  let postprocessor = entry => entry;
+
+  if (postprocessorPath) {
+    const importPath = pathToFileURL(path.join(process.cwd(), postprocessorPath));
+    ({ default: postprocessor } = await import(importPath));
+  }
+
   // get transforms from file
 
   let transforms = {};
@@ -64,7 +75,11 @@ program
 
   // run module
 
-  Object.assign(options, { mappings, transforms });
+  Object.assign(options, {
+    mappings,
+    postprocessor,
+    transforms,
+  });
 
   const readStream = toolbox2json(filePath, options);
 
