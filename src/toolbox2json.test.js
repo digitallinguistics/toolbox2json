@@ -159,7 +159,7 @@ describe(`toolbox2json`, () => {
 
   });
 
-  specify.only(`option: parseError = "object"`, async () => {
+  specify(`option: parseError = "object"`, async () => {
 
     await convert(badPath, {
       out:        outPath,
