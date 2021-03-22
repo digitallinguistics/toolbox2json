@@ -53,9 +53,11 @@ export default function parseLines(lines, mappings, transforms) {
 
     const propName  = mappings[marker] ?? marker;
     const transform = transforms[marker] ?? noTransform;
-    const data      = linesMap.get(propName);
 
-    linesMap.set(propName, transform(data));
+    if (linesMap.has(propName)) {
+      const data = linesMap.get(propName);
+      linesMap.set(propName, transform(data));
+    }
 
   });
 
