@@ -6,7 +6,7 @@ const lineRegExp = /^\\(?<marker>\S+)\s*(?<data>.*)$/u;
  * @return {Object}      Returns an object with "marker" and "data" properties.
  */
 function getLineData(line) {
-  return lineRegExp.exec(line).groups;
+  return lineRegExp.exec(line.trim()).groups;
 }
 
 /**

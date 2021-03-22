@@ -44,6 +44,20 @@ describe(`toolbox2json`, () => {
 
   });
 
+  it(`trims white space`, async () => {
+
+    await convert(crkPath, {
+      out:    outPath,
+      silent: true,
+    });
+
+    const json      = await readFile(outPath, `utf8`);
+    const [{ sem }] = JSON.parse(json);
+
+    expect(sem).to.be(`Sky`);
+
+  });
+
   specify(`<filePath>`, () => {
     expect(() => convert()).to.throwError(`filePath`);
   });
