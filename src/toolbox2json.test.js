@@ -220,4 +220,22 @@ describe(`toolbox2json`, () => {
 
   });
 
+  specify(`transforms should be applied after all lines are parsed`, async () => {
+
+    const { default: transforms } = await import(`../test/transforms.js`);
+
+    await convert(crkPath, {
+      out:    outPath,
+      silent: true,
+      transforms,
+    });
+
+    const json    = await readFile(outPath, `utf8`);
+    const [entry] = JSON.parse(json);
+
+    expect(entry.dl).to.have.length(2);
+    expect(entry.dl[1]).to.be.a(`string`);
+
+  });
+
 });

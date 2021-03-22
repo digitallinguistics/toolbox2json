@@ -29,27 +29,35 @@ export default function parseLines(lines, mappings, transforms) {
 
   const linesMap = lines
   .map(getLineData)
-  .reduce((map, { marker, data: newData }) => {
+  .reduce((map, { marker, data }) => {
 
-    const propName        = mappings[marker] ?? marker;
-    const transform       = transforms[marker] ?? noTransform;
-    const transformedData = transform(newData);
+    const propName = mappings[marker] ?? marker;
 
     if (map.has(propName)) {
 
       const currentData = map.get(propName);
-      if (Array.isArray(currentData)) currentData.push(transformedData);
-      else map.set(propName, [currentData, transformedData]);
+      if (Array.isArray(currentData)) currentData.push(data);
+      else map.set(propName, [currentData, data]);
 
     } else {
 
-      map.set(propName, transformedData);
+      map.set(propName, data);
 
     }
 
     return map;
 
   }, new Map);
+
+  Object.entries(transforms).forEach(([marker]) => {
+
+    const propName  = mappings[marker] ?? marker;
+    const transform = transforms[marker] ?? noTransform;
+    const data      = linesMap.get(propName);
+
+    linesMap.set(propName, transform(data));
+
+  });
 
   return Object.fromEntries(linesMap);
 
