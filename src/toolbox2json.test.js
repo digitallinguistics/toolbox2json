@@ -167,11 +167,12 @@ describe(`toolbox2json`, () => {
       silent:     true,
     });
 
-    const json     = await readFile(outPath, `utf8`);
-    const entries  = JSON.parse(json);
-    const { name } = entries.pop();
+    const json            = await readFile(outPath, `utf8`);
+    const entries         = JSON.parse(json);
+    const { name, lines } = entries.pop();
 
     expect(name).to.be(`ParseError`);
+    expect(lines).to.be.an(`array`);
 
   });
 

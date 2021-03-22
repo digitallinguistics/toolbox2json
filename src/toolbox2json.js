@@ -99,13 +99,19 @@ class Lines2JSStream extends Transform {
 
     } catch (e) {
 
-      const error = new ParseError(e.message);
+      const err = new ParseError(e.message);
 
       switch (this.parseError) {
-        case `error`:  return callback(error);
-        case `none`:   break;
-        case `object`: this.push(error); break;
-        default:       if (!this.silent) console.warn(error);
+        case `error`: return callback(err);
+        case `none`:  break;
+        case `object`:
+          this.push({
+            lines:   this.lines,
+            message: err.message,
+            name:    err.name,
+          });
+          break;
+        default: if (!this.silent) console.warn(err);
       }
 
     } finally {
