@@ -1,6 +1,6 @@
 # toolbox2json
 
-A Node / JavaScript library for converting [SIL][SIL] [Toolbox][Toolbox] dictionary files to [JSON][JSON]. Useful for any linguist working with a Toolbox dictionary database. Runs as a module or on the command line.
+A Node / JavaScript library for parsing [SIL][SIL] [Toolbox][Toolbox] dictionary files and optionally converting them to [JSON][JSON]. Useful for any linguist working with a Toolbox dictionary database. Runs as a module or on the command line.
 
 If you use this library for research purposes, please consider citing it using the following model:
 
@@ -34,108 +34,58 @@ yarn add @digitallinguistics/toolbox2json
 
 The library can be run as either an ES module or from the command line.
 
+### Running as a Module
+
 The ES module exports a single function, `toolbox2json`, which accepts two arguments:
 
 * the path to the Toolbox file (_required_)
 * an options object (_optional_)
 
-The resulting JSON is saved to the path specified in the `out` option:
+By default, the library returns a Promise that resolves to an Array of the entries in the Toolbox file.
 
 ```js
 import convert from '@digitallinguistics/toolbox2json';
 
-convert(`./my-data.db`, { out: `my-data.json` });
+const entries = await convert(`./my-data.db`);
 ```
 
-To run the library from the command line, use `toolbox2json <filePath>`. This will print the results to the console by default. To save the JSON output to a file, use the `--out` option or `-o` flag: `toolbox2json <filePath> --out <jsonPath>`. To see the full list of command line options, run `toolbox2json --help`.
+You can also save the data to a JSON file by providing the `out` option:
+
+```js
+import convert from '@digitallinguistics/toolbox2json';
+
+await convert(`./my-data.db`, { out: `my-data.json` });
+```
+
+### Running on the Command Line
+
+To run the library from the command line, use `toolbox2json <filePath>`. (The `toolbox2json` command is added to the PATH when the library is installed.) This will print the results to the console by default. To save the JSON output to a file, use the `--out` option or `-o` flag: `toolbox2json <filePath> --out <jsonPath>`. To see the full list of command line options, run `toolbox2json --help`.
 
 ## Field Mappings
 
-By default, the library will use line markers as property names when converting data. For example, if the Toolbox file has a field `\txn` for transcriptions, that would be converted to `{ "txn": "<data>" }`.
+The library will use line markers as property names when converting data. For example, if the Toolbox file has a field `\txn` for transcriptions, that would be converted to `{ "txn": "<data>" }`.
 
-If the Toolbox entry contains multiple instances of the same line marker, they will be converted to an array by default. For example, if the Toolbox file has two `\gl` fields containing the data `fire` and `light`, those would be converted to `{ "gl": ["fire", "light"] }`. If you would like to customize this behavior, use the `transforms` option.
-
-If you would like to customize the property names, use the `mappings` option. This should be an object mapping line markers (not including the initial backslash `\`) to property names.
-
-On the command line, you can specify field mappings by providing the path to a mappings config file using the `-m, --mappings` option. This file can be either a JSON or YAML document.
-
-## Transforming Data
-
-By default, the library copies data from each line into its corresponding JSON property unchanged. If you would like to transform the data, you can do so using the `transforms` option (when using the library as an ES module) or the `-t, --transforms` flags (when using the library from the command line). When using transforms on the command line, the value passed to `-t` or `--transforms` should be the path to a JavaScript file that exports a single object containing the transformation methods.
-
-The object passed to the `transforms` option or exported by the transforms file should have methods for each property whose data you would like to transform. These methods will be passed the data for that line as an argument. Your method should transform the data and return it in the desired format. For example, if you would like to transform data in the `\txn` field to lowercase, your `transforms` object might look like this:
-
-```js
-const transforms = {
-  txn(data) {
-    return data.toLowerCase();
-  }
-};
-```
-
-**NOTE:** The names of the transform methods should be based on the names of _original_ line markers, not the new property names specified in the `mappings` option.
-
-If there are multiple instances of a marker in a Toolbox entry, the `data` argument will be an array containing all the lines with that marker. For example, if the Toolbox file has two `\gl` fields containing the data `fire` and `light`, the `data` argument will be `["fire", "light"]`. If a property should always be an array, you may want to check for the case where only 1 line is provided, and convert `data` to an array if so:
-
-```js
-const transforms = {
-  gl(data) {
-    return Array.isArray(data) : data : [data];
-  }
-}
-```
-
-You can also apply a transform to the entire data object as a last step in the conversion process by providing a function to the `postprocessor` option. The function should accept the data object as input, and return the finalized version of the data object. When using the library as a module, you can provide this function as the `postprocessor` option; when using the library from the command line, the `-p, --postprocessor` option should be the path to a file which exports the postprocessor function as its default export.
+If the Toolbox entry contains multiple instances of the same line marker, they will be converted to an array by default. For example, if the Toolbox file has two `\gl` fields containing the data `fire` and `light`, those would be converted to `{ "gl": ["fire", "light"] }`.
 
 ## Options
 
-| Module          | Command Line      | Flag | Type     | Default | Description                                                                                                                                                                                                                                                                                                                      |
-|-----------------|-------------------|------|----------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|                 | `--help`          | `-h` |          |         | Display help.                                                                                                                                                                                                                                                                                                                    |
-| `mappings`      | `--mappings`      | `-m` | Object   |         | An object mapping line markers to property names (if using as an ES module), or the path to a JSON or YAML file where the mappings live (if using on the command line).                                                                                                                                                          |
-| `parseError`    | `--parse-error`   | `-e` | `"warn"` |         | How to handle errors when parsing records. `"error"`: Stop and throw an error. `"none"`: Fail silently and continue. No object is created for that entry. `"object"`: Return a ParseError object for that entry. `"warn"`: Throw a warning and continue (_default_).                                                             |
-| `postprocessor` | `--postprocessor` | `-p` | Function |         | A function that accepts the final version of the data, applies any final transforms, and returns the final version of the data. See [Transforming Data](#transforming-data).                                                                                                                                                     |
-| `ndjson`        | `--ndjson`        | `-n` | Boolean  | `false` | Outputs newline-delimited JSON.                                                                                                                                                                                                                                                                                                  |
-| `out`           | `--out`           | `-o` | String   |         | The path where the JSON file should be saved. If this option is provided, the module will return a Promise that resolves when the operation is complete, and no JSON data will be displayed on the command line. Otherwise, the module returns a readable stream of JavaScript objects (one for each entry in the Toolbox file). |
-| `silent`        | `--silent`        | `-s` | Boolean  | `false` | Silences console output (except for the converted JSON).                                                                                                                                                                                                                                                                         |
-| `transforms`    | `--transforms`    | `-t` | Object   | `{}`    | An object containing methods for transforming field data. See [Transforming Data](#transforming-data).                                                                                                                                                                                                                           |
-|                 | `--version`       | `-v` |          |         | Output the version number.                                                                                                                                                                                                                                                                                                       |
-
-## Streaming Data
-
-By default, calling the `toolbox2json` function returns a readable stream of JavaScript objects (where each object represents one entry in the Toolbox file), which you can subscribe to using the `data` event. (If the `out` option is provided, the function returns a Promise that resolves when the JSON file is done being written instead.)
-
-In this example, each JavaScript object is converted to JSON, and streamed to the `my-data.json` file. (This example is rather pointless, however, since the library already creates a JSON file for you when you provide an `out` option. The example merely illustrates how you can subscribe to the data stream.)
-
-```js
-import convert       from '@digitallinguistics/toolbox2json';
-import fs            from 'fs';
-import { Transform } from 'stream';
-
-const readableStream = convert(`./my-data.db`);
-const writableStream = fs.createWriteStream(`my-data.json`);
-
-const transformStream = new Transform({
-  transform(chunk, encoding, callback) {
-    this.push(JSON.stringify(chunk.toString()));
-    callback();
-  }
-})
-
-readableStream
-.pipe(transformStream)
-.pipe(writableStream);
-```
+| Module       | Command Line    | Flag | Type    | Default  | Description                                                                                                                                                                                                                                                          |
+|--------------|-----------------|------|---------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|              | `--help`        | `-h` |         |          | Display help.                                                                                                                                                                                                                                                        |
+| `parseError` | `--parse-error` | `-e` | String  | `"warn"` | How to handle errors when parsing records. `"error"`: Stop and throw an error. `"none"`: Fail silently and continue. No object is created for that entry. `"object"`: Return a ParseError object for that entry. `"warn"`: Throw a warning and continue (_default_). |
+| `ndjson`     | `--ndjson`      | `-n` | Boolean | `false`  | Outputs newline-delimited JSON.                                                                                                                                                                                                                                      |
+| `out`        | `--out`         | `-o` | String  |          | The path where the JSON file should be saved. If this option is provided, the module will return a Promise that resolves when the operation is complete, and no JSON data will be displayed on the command line.                                                     |
+|              | `--version`     | `-v` |         |          | Output the version number.                                                                                                                                                                                                                                           |
 
 ## Contributing
 
 * Find a bug? Want to request a feature? [Open an issue.][new-issue]
 * Pull requests are welcome!
-* Tests are run using [Mocha][Mocha] and [expect.js][expect]. You can run them locally with `npm test`.
+* Tests are run using [Mocha][Mocha] and [Chai][Chai]. You can run them locally with `npm test`.
 * Sample data for testing are located in `/test`.
 
 <!-- LINKS -->
-[expect]:    https://github.com/Automattic/expect.js
+[Chai]:      https://www.chaijs.com/
 [GitHub]:    https://github.com/digitallinguistics/toolbox2json#readme
 [issues]:    https://github.com/digitallinguistics/toolbox2json/issues
 [JSON]:      https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Objects/JSON
