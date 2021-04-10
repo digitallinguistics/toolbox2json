@@ -6,6 +6,7 @@
 
 import chai              from 'chai';
 import convert           from './toolbox2json.js';
+import { EOL }           from 'os';
 import { fileURLToPath } from 'url';
 import fs                from 'fs';
 import path              from 'path';
@@ -125,6 +126,12 @@ describe('toolbox2json', function() {
     await convert(crkPath, { out: outPath, silent: true });
     const exists = fs.existsSync(outPath);
     expect(exists).to.be.true;
+  });
+
+  specify('option: pretty', async function() {
+    await convert(crkPath, { out: outPath, pretty: 2, silent: true });
+    const text = await readFile(outPath, 'utf8');
+    expect(text.startsWith(`[{\n  `)).to.be.true;
   });
 
 });

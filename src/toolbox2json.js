@@ -134,8 +134,10 @@ class ParseError extends Error {
   }
 }
 
-function writeEntries(entries, outPath, ndjson) {
+function writeEntries(entries, outPath, ndjson, pretty) {
   return new Promise((resolve, reject) => {
+
+    if (pretty) ndjson = false; // eslint-disable-line no-param-reassign
 
     const separator   = ndjson ? EOL : `,`;
     const writeStream = createWriteStream(outPath);
@@ -146,7 +148,7 @@ function writeEntries(entries, outPath, ndjson) {
     if (!ndjson) writeStream.write(`[`);
 
     entries.forEach((entry, i) => {
-      writeStream.write(JSON.stringify(entry));
+      writeStream.write(JSON.stringify(entry, null, pretty));
       if (i < entries.length - 1) writeStream.write(separator);
     });
 
@@ -161,6 +163,7 @@ export default async function toolbox2json(filePath, {
   ndjson = false,
   out,
   parseError = 'warn',
+  pretty,
   silent = false,
 } = {}) {
 
@@ -187,7 +190,7 @@ export default async function toolbox2json(filePath, {
     entries.push(entry);
   }
 
-  if (out) await writeEntries(entries, out, ndjson);
+  if (out) await writeEntries(entries, out, ndjson, pretty);
 
   return entries;
 
