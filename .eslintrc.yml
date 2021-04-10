@@ -4,6 +4,8 @@ parserOptions:
   ecmaFeatures:
     impliedStrict: true
   sourceType: module
+plugins:
+  - chai-friendly
 env:
   browser: false
   es2021:  true
@@ -377,7 +379,6 @@ rules:
     - reject
   no-shadow-restricted-names: error
   no-sparse-arrays: warn
-  no-sync: error
   no-tabs: warn
   no-template-curly-in-string: error
   no-ternary: 'off'
@@ -390,7 +391,6 @@ rules:
   - error
   - typeof: true
   no-undef-init: error
-  no-undefined: warn
   no-underscore-dangle:
   - warn
   - allow:
@@ -406,7 +406,8 @@ rules:
   no-unreachable-loop: error
   no-unsafe-finally: warn
   no-unsafe-negation: error
-  no-unused-expressions: error
+  # no-unused-expressions: error
+  chai-friendly/no-unused-expressions: error
   no-unused-labels: error
   no-unused-vars: error
   no-use-before-define:

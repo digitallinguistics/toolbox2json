@@ -22,12 +22,6 @@ jobs:
       - name: install dependencies
         run:  npm ci
 
-      - name: cache dependencies
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key:  ${{ hashFiles('**/package-lock.json') }}
-
       - name: run tests
         run:  npm test
 

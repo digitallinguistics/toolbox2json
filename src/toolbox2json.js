@@ -1,36 +1,25 @@
-import createSpinner from 'ora';
-import fs            from 'fs';
-import os            from 'os';
-import parseLines    from './parseLines.js';
-import readLine      from 'readline';
-import { Transform } from 'stream';
+import { createInterface as createLineStream } from 'readline';
+import { EOL }                                 from 'os';
+import ProgressBar                             from 'progress';
+import { Transform }                           from 'stream';
 
-const blankLineRegExp = /^\s*$/u;
+import {
+  createReadStream,
+  createWriteStream,
+  promises as fsPromises,
+} from 'fs';
+
+const { stat } = fsPromises;
+
+const lineRegExp = /^\\(?<marker>\S+)\s*(?<data>.*)$/u;
 
 /**
- * Transform Stream that transforms a stream of JavaScript objects to JSON.
- * @extends Transform
+ * Parses a raw line into an object with "marker" and "data" properties.
+ * @param  {String} line The raw line from the Toolbox file
+ * @return {Object}      Returns an object with "marker" and "data" properties.
  */
-class JS2JSONStream extends Transform {
-
-  /**
-   * Create a new JS2JSONStream
-   * @param {String} separator The separator to use between JSON objects.
-   */
-  constructor({ separator }) {
-    super({ writableObjectMode: true });
-    this.separator = separator;
-    this.sep       = ``; // the first chunk is not preceded by a separator
-  }
-
-  _transform(entry, encoding, callback) {
-    const json = JSON.stringify(entry);
-    this.push(this.sep);
-    this.push(json);
-    this.sep = this.separator; // update after first chunk
-    callback();
-  }
-
+function getLineData(line) {
+  return line.trim().match(lineRegExp).groups;
 }
 
 /**
@@ -39,26 +28,17 @@ class JS2JSONStream extends Transform {
  */
 class Lines2JSStream extends Transform {
 
-  constructor({
-    mappings,
-    parseError,
-    postprocessor,
-    silent,
-    transforms,
-  }) {
+  constructor({ parseError }) {
 
     super({
       readableObjectMode: true,
       writableObjectMode: true,
     });
 
-    this.fileHeader  = true; // the first set of lines is the file header
-    this.lines       = [];
-    this.mappings    = mappings;
-    this.parseError  = parseError;
-    this.postprocess = postprocessor;
-    this.silent      = silent;
-    this.transforms  = transforms;
+    this.blankLineRegExp = /^\s*$/u;
+    this.fileHeader      = true; // the first set of lines is the file header
+    this.lines           = [];
+    this.parseError      = parseError;
 
   }
 
@@ -70,7 +50,7 @@ class Lines2JSStream extends Transform {
 
   _transform(line, encoding, callback) {
 
-    const isBlank = blankLineRegExp.test(line);
+    const isBlank = this.blankLineRegExp.test(line);
 
     if (isBlank) {               // a blank line indicates the end of a Toolbox entry; ready to parse entry
 
@@ -95,17 +75,29 @@ class Lines2JSStream extends Transform {
 
     try {
 
-      // attempt to parse lines
-      const entry = parseLines(
-        this.lines,
-        this.mappings,
-        this.transforms,
-      );
+      const linesMap = this.lines
+      .map(getLineData)
+      .reduce((map, { marker, data }) => {
 
-      // apply postprocessing function
-      const finalEntry = this.postprocess(entry);
+        if (map.has(marker)) {
 
-      this.push(finalEntry); // write entry to stream
+          const currentData = map.get(marker);
+          if (Array.isArray(currentData)) currentData.push(data);
+          else map.set(marker, [currentData, data]);
+
+        } else {
+
+          map.set(marker, data);
+
+        }
+
+        return map;
+
+      }, new Map);
+
+      const entry = Object.fromEntries(linesMap);
+
+      this.push(entry);
 
     } catch (e) {
 
@@ -121,7 +113,7 @@ class Lines2JSStream extends Transform {
             name:    err.name,
           });
           break;
-        default: if (!this.silent) console.warn(err);
+        default: console.warn(err);
       }
 
     } finally {
@@ -142,82 +134,64 @@ class ParseError extends Error {
   }
 }
 
-export default function toolbox2json(filePath, {
-  parseError,
-  mappings   = {},
-  ndjson     = false,
-  out,
-  postprocessor = entry => entry,
-  silent        = false,
-  transforms    = {},
-} = {}) {
+function writeEntries(entries, outPath, ndjson, pretty) {
+  return new Promise((resolve, reject) => {
 
-  // validation
+    if (pretty) ndjson = false; // eslint-disable-line no-param-reassign
+
+    const separator   = ndjson ? EOL : `,`;
+    const writeStream = createWriteStream(outPath);
+
+    writeStream.on(`error`, reject);
+    writeStream.on(`close`, resolve);
+
+    if (!ndjson) writeStream.write(`[`);
+
+    entries.forEach((entry, i) => {
+      writeStream.write(JSON.stringify(entry, null, pretty));
+      if (i < entries.length - 1) writeStream.write(separator);
+    });
+
+    if (!ndjson) writeStream.write(`]${EOL}`);
+
+    writeStream.end();
+
+  });
+}
+
+export default async function toolbox2json(filePath, {
+  ndjson = false,
+  out,
+  parseError = 'warn',
+  pretty,
+  silent = false,
+} = {}) {
 
   if (!filePath) {
     throw new TypeError(`Please provide a <filePath> argument containing the path to the Toolbox file.`);
   }
 
-  // set up console spinner
+  const { size: fileSize } = await stat(filePath);
+  const progressBar        = new ProgressBar(`:bar :percent :eta`, { total: fileSize });
+  const readStream         = createReadStream(filePath);
+  const lineStream         = createLineStream({ input: readStream, terminal: false });
+  const transformStream    = new Lines2JSStream({ parseError });
 
-  const spinner      = createSpinner(`Converting Toolbox file.`);
-  const displayError = e => spinner.fail(e.message);
+  lineStream.on(`close`, () => transformStream.end());
+  lineStream.on(`line`, line => transformStream.write(line));
 
-  if (silent) spinner.isSilent = true;
-  spinner.start();
+  if (!silent) {
+    readStream.on(`data`, chunk => progressBar.tick(chunk.length > fileSize ? fileSize : chunk.length));
+  }
 
-  // create streams
+  const entries = [];
 
-  const readStream = fs.createReadStream(filePath);
+  for await (const entry of transformStream) {
+    entries.push(entry);
+  }
 
-  const lineStream = readLine.createInterface({
-    input:    readStream,
-    terminal: false,
-  });
+  if (out) await writeEntries(entries, out, ndjson, pretty);
 
-  const lines2js = new Lines2JSStream({
-    mappings,
-    parseError,
-    postprocessor,
-    silent,
-    transforms,
-  });
-
-  // subscribe to stream events
-
-  lines2js.on(`error`, displayError);
-  lineStream.on(`close`, () => spinner.succeed(`Toolbox file converted.`));
-  lineStream.on(`close`, () => lines2js.end());
-  lineStream.on(`error`, displayError);
-  lineStream.on(`line`, line => lines2js.write(line));
-  readStream.on(`error`, displayError);
-
-  // return a readable stream if no "out" option is provided
-
-  if (!out) return lines2js;
-
-  // stream the resulting JSON to a file
-
-  return new Promise((resolve, reject) => {
-
-    const separator   = ndjson ? os.EOL : `,`;
-    const js2json     = new JS2JSONStream({ separator });
-    const writeStream = fs.createWriteStream(out);
-
-    lines2js.on(`error`, reject);
-    js2json.on(`error`, reject);
-    writeStream.on(`error`, reject);
-    writeStream.on(`finish`, resolve);
-
-    if (!ndjson) {
-      writeStream.write(`[`);
-      js2json.on(`end`, () => writeStream.end(`]`));
-    }
-
-    lines2js
-    .pipe(js2json)
-    .pipe(writeStream);
-
-  });
+  return entries;
 
 }
