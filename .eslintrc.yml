@@ -4,6 +4,8 @@ parserOptions:
   ecmaFeatures:
     impliedStrict: true
   sourceType: module
+plugins:
+  - chai-friendly
 env:
   browser: false
   es2021:  true
@@ -404,7 +406,8 @@ rules:
   no-unreachable-loop: error
   no-unsafe-finally: warn
   no-unsafe-negation: error
-  no-unused-expressions: error
+  # no-unused-expressions: error
+  chai-friendly/no-unused-expressions: error
   no-unused-labels: error
   no-unused-vars: error
   no-use-before-define:

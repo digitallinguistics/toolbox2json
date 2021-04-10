@@ -38,7 +38,6 @@
   },
   "dependencies": {
     "commander": "^7.1.0",
-    "ndjson": "^2.0.0",
     "progress": "^2.0.3"
   },
   "scripts": {
@@ -47,6 +46,9 @@
   "devDependencies": {
     "chai": "^4.3.4",
     "eslint": "^7.22.0",
-    "mocha": "^8.3.2"
+    "eslint-plugin-chai-friendly": "^0.6.0",
+    "mocha": "^8.3.2",
+    "sinon": "^10.0.1",
+    "sinon-chai": "^3.6.0"
   }
 }

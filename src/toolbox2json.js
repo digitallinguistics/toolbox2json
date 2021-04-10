@@ -1,8 +1,13 @@
 import { createInterface as createLineStream } from 'readline';
+import { EOL }                                 from 'os';
 import ProgressBar                             from 'progress';
 import { Transform }                           from 'stream';
 
-import { createReadStream, promises as fsPromises } from 'fs';
+import {
+  createReadStream,
+  createWriteStream,
+  promises as fsPromises,
+} from 'fs';
 
 const { stat } = fsPromises;
 
@@ -23,7 +28,7 @@ function getLineData(line) {
  */
 class Lines2JSStream extends Transform {
 
-  constructor() {
+  constructor({ parseError }) {
 
     super({
       readableObjectMode: true,
@@ -33,6 +38,7 @@ class Lines2JSStream extends Transform {
     this.blankLineRegExp = /^\s*$/u;
     this.fileHeader      = true; // the first set of lines is the file header
     this.lines           = [];
+    this.parseError      = parseError;
 
   }
 
@@ -128,7 +134,35 @@ class ParseError extends Error {
   }
 }
 
-export default async function toolbox2json(filePath) {
+function writeEntries(entries, outPath, ndjson) {
+  return new Promise((resolve, reject) => {
+
+    const separator   = ndjson ? EOL : `,`;
+    const writeStream = createWriteStream(outPath);
+
+    writeStream.on(`error`, reject);
+    writeStream.on(`close`, resolve);
+
+    if (!ndjson) writeStream.write(`[`);
+
+    entries.forEach((entry, i) => {
+      writeStream.write(JSON.stringify(entry));
+      if (i < entries.length - 1) writeStream.write(separator);
+    });
+
+    if (!ndjson) writeStream.write(`]${EOL}`);
+
+    writeStream.end();
+
+  });
+}
+
+export default async function toolbox2json(filePath, {
+  ndjson = false,
+  out,
+  parseError = 'warn',
+  silent = false,
+} = {}) {
 
   if (!filePath) {
     throw new TypeError(`Please provide a <filePath> argument containing the path to the Toolbox file.`);
@@ -138,17 +172,22 @@ export default async function toolbox2json(filePath) {
   const progressBar        = new ProgressBar(`:bar :percent :eta`, { total: fileSize });
   const readStream         = createReadStream(filePath);
   const lineStream         = createLineStream({ input: readStream, terminal: false });
-  const transformStream    = new Lines2JSStream;
+  const transformStream    = new Lines2JSStream({ parseError });
 
   lineStream.on(`close`, () => transformStream.end());
   lineStream.on(`line`, line => transformStream.write(line));
-  readStream.on(`data`, chunk => progressBar.tick(chunk.length > fileSize ? fileSize : chunk.length));
+
+  if (!silent) {
+    readStream.on(`data`, chunk => progressBar.tick(chunk.length > fileSize ? fileSize : chunk.length));
+  }
 
   const entries = [];
 
   for await (const entry of transformStream) {
     entries.push(entry);
   }
+
+  if (out) await writeEntries(entries, out, ndjson);
 
   return entries;
 
