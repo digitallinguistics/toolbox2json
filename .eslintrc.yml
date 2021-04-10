@@ -377,7 +377,6 @@ rules:
     - reject
   no-shadow-restricted-names: error
   no-sparse-arrays: warn
-  no-sync: error
   no-tabs: warn
   no-template-curly-in-string: error
   no-ternary: 'off'
@@ -390,7 +389,6 @@ rules:
   - error
   - typeof: true
   no-undef-init: error
-  no-undefined: warn
   no-underscore-dangle:
   - warn
   - allow:

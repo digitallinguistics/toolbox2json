@@ -1,15 +1,14 @@
 /* eslint-disable
+  func-names,
   max-nested-callbacks,
-  no-sync,
-  no-undefined,
+  prefer-arrow-callback,
 */
 
 import convert           from './toolbox2json.js';
-import expect            from 'expect.js';
+import { expect }        from 'chai';
 import { fileURLToPath } from 'url';
 import fs                from 'fs';
 import path              from 'path';
-import { Transform }     from 'stream';
 
 const currentDir   = path.dirname(fileURLToPath(import.meta.url));
 const { readFile } = fs.promises;
@@ -18,33 +17,23 @@ const badPath = path.join(currentDir, `../test/bad.db`);
 const crkPath = path.join(currentDir, `../test/crk.db`);
 const outPath = `test.json`;
 
-describe(`toolbox2json`, () => {
+describe(`toolbox2json`, function() {
 
-  after(() => {
+  after(function() {
     const exists = fs.existsSync(outPath);
     if (exists) fs.unlinkSync(outPath);
   });
 
-  it(`returns a stream by default`, () => {
-    const transformStream = convert(crkPath, { silent: true });
-    expect(transformStream).to.be.a(Transform);
-  });
-
-  it(`returns 1 object per Toolbox entry`, done => {
+  it.only(`returns 1 object per Toolbox entry`, async function() {
 
     const numEntries = 5;
-    const stream     = convert(crkPath, { silent: true });
-    const entries    = [];
+    const entries    = await convert(crkPath);
 
-    stream.on(`data`, entry => entries.push(entry));
-    stream.on(`end`, () => {
-      expect(entries).to.have.length(numEntries);
-      done();
-    });
+    expect(entries).to.have.length(numEntries);
 
   });
 
-  it(`trims white space`, async () => {
+  it(`trims white space`, async function() {
 
     await convert(crkPath, {
       out:    outPath,
@@ -58,11 +47,11 @@ describe(`toolbox2json`, () => {
 
   });
 
-  specify(`<filePath>`, () => {
+  specify(`<filePath>`, function() {
     expect(() => convert()).to.throwError(`filePath`);
   });
 
-  specify(`option: mappings (default)`, async () => {
+  specify(`option: mappings (default)`, async function() {
 
     await convert(crkPath, {
       out:    outPath,
@@ -78,7 +67,7 @@ describe(`toolbox2json`, () => {
 
   });
 
-  specify(`option: mappings (custom)`, async () => {
+  specify(`option: mappings (custom)`, async function() {
 
     await convert(crkPath, {
       mappings: {
@@ -106,7 +95,7 @@ describe(`toolbox2json`, () => {
 
   });
 
-  specify(`option: ndjson = false (default)`, async () => {
+  specify(`option: ndjson = false (default)`, async function() {
 
     await convert(crkPath, {
       out:    outPath,
@@ -123,7 +112,7 @@ describe(`toolbox2json`, () => {
 
   });
 
-  specify(`option: ndjson = true`, async () => {
+  specify(`option: ndjson = true`, async function() {
 
     await convert(crkPath, {
       ndjson: true,
@@ -144,7 +133,7 @@ describe(`toolbox2json`, () => {
 
   });
 
-  specify(`option: parseError = "error"`, async () => {
+  specify(`option: parseError = "error"`, async function() {
 
     try {
       await convert(badPath, {
@@ -158,7 +147,7 @@ describe(`toolbox2json`, () => {
 
   });
 
-  specify(`option: parseError = "none"`, async () => {
+  specify(`option: parseError = "none"`, async function() {
 
     await convert(badPath, {
       out:        outPath,
@@ -173,7 +162,7 @@ describe(`toolbox2json`, () => {
 
   });
 
-  specify(`option: parseError = "object"`, async () => {
+  specify(`option: parseError = "object"`, async function() {
 
     await convert(badPath, {
       out:        outPath,
@@ -190,11 +179,11 @@ describe(`toolbox2json`, () => {
 
   });
 
-  specify(`option: parseError = "warn"`, async () => {
+  specify(`option: parseError = "warn"`, async function() {
 
     // stub console.warn to prevent console output
     const original = console.warn;
-    console.warn = () => {}; // eslint-disable-line no-empty-function
+    console.warn = () => { /* no-op */ };
 
     await convert(badPath, {
       out:        outPath,
@@ -207,13 +196,13 @@ describe(`toolbox2json`, () => {
 
   });
 
-  specify(`option: out`, async () => {
+  specify(`option: out`, async function() {
     await convert(crkPath, { out: outPath, silent: true });
     const exists = fs.existsSync(outPath);
     expect(exists).to.be(true);
   });
 
-  specify(`option: postprocessor`, async () => {
+  specify(`option: postprocessor`, async function() {
 
     const postprocessor = () => ({ postprocessed: true });
 
@@ -226,7 +215,7 @@ describe(`toolbox2json`, () => {
 
   });
 
-  specify(`option: transforms`, async () => {
+  specify(`option: transforms`, async function() {
 
     const { default: transforms } = await import(`../test/transforms.js`);
 
@@ -248,7 +237,7 @@ describe(`toolbox2json`, () => {
 
   });
 
-  specify(`transforms should be applied after all lines are parsed`, async () => {
+  specify(`transforms should be applied after all lines are parsed`, async function() {
 
     const { default: transforms } = await import(`../test/transforms.js`);
 

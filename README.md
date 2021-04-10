@@ -16,10 +16,10 @@ If you use this library for research purposes, please consider citing it using t
 ## Contents
 <!-- TOC -->
 - [Basic Usage](#basic-usage)
+  - [Running as a Module](#running-as-a-module)
+  - [Running on the Command Line](#running-on-the-command-line)
 - [Field Mappings](#field-mappings)
-- [Transforming Data](#transforming-data)
 - [Options](#options)
-- [Streaming Data](#streaming-data)
 - [Contributing](#contributing)
 <!-- /TOC -->
 
