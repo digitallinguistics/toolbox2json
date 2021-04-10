@@ -15,6 +15,7 @@ If you use this library for research purposes, please consider citing it using t
 
 ## Contents
 <!-- TOC -->
+- [Prerequisites](#prerequisites)
 - [Basic Usage](#basic-usage)
   - [Running as a Module](#running-as-a-module)
   - [Running on the Command Line](#running-on-the-command-line)
@@ -23,20 +24,25 @@ If you use this library for research purposes, please consider citing it using t
 - [Contributing](#contributing)
 <!-- /TOC -->
 
+## Prerequisites
+
+* Basic knowledge of JavaScript OR knowledge of how to run a program from the command line.
+* [Node.js][Node] installed on your system.
+
 ## Basic Usage
 
-Install using [npm][npm] or [yarn][yarn]:
+Install using [npm][npm] or [yarn][yarn]. (npm comes bundled with Node.js when you install it.)
 
 ```cmd
 npm install @digitallinguistics/toolbox2json
 yarn add @digitallinguistics/toolbox2json
 ```
 
-The library can be run as either an ES module or from the command line.
+The library can be run as either a JavaScript module or from the command line.
 
 ### Running as a Module
 
-The ES module exports a single function, `toolbox2json`, which accepts two arguments:
+The JavaScript module exports a single function, `toolbox2json`, which accepts two arguments:
 
 * the path to the Toolbox file (_required_)
 * an options object (_optional_)
@@ -93,6 +99,7 @@ If the Toolbox entry contains multiple instances of the same line marker, they w
 [license]:   https://github.com/digitallinguistics/toolbox2json/blob/main/LICENSE
 [Mocha]:     https://mochajs.org/
 [new-issue]: https://github.com/digitallinguistics/toolbox2json/issues/new
+[Node]:      https://nodejs.org/
 [npm]:       https://www.npmjs.com/
 [releases]:  https://github.com/digitallinguistics/toolbox2json/releases
 [SIL]:       https://www.sil.org/
